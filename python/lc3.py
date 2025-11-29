@@ -20,6 +20,7 @@ import ctypes
 import enum
 import glob
 import os
+import sys
 import typing
 
 from ctypes import c_bool, c_byte, c_int, c_uint, c_size_t, c_void_p
@@ -128,8 +129,13 @@ class _Base:
         lib.lc3_hr_delay_samples.argtypes = [c_bool, c_int, c_int]
         self.lib = lib
 
-        if not (libc_path := find_library("c")):
-            raise InitializationError("Unable to find libc")
+        if sys.platform == "win32":
+            libc_name = "msvcrt"
+        else:
+            libc_name = "c"
+
+        if not (libc_path := find_library(libc_name)):
+            raise InitializationError(f"Unable to find {libc_name}")
         libc = ctypes.cdll.LoadLibrary(libc_path)
 
         self.malloc = libc.malloc
